@@ -6,6 +6,7 @@ import { surah } from "../assets/surah";
 import translate from '../redux/exportPageTranslate';
 import { surahName } from "../assets/surahName";
 import { TbPlayerPlay, TbPlayerPause, TbSettings } from "react-icons/tb";
+import { AiOutlineArrowLeft, AiOutlineArrowRight} from "react-icons/ai"
 const Page = (props: {}) => {
   const navigate = useNavigate()
   const { id } = useParams<string>();
@@ -38,7 +39,7 @@ const Page = (props: {}) => {
       const ayeB = `${ayat[page][index]}`.padStart(3,'0')
       const surahB = `${surah[page][index]}`.padStart(3,'0')
       setTranslateSrc(`https://asset.nasimrezvan.com/data/Makarem_Kabiri/${surahB}${ayeB}.mp3?offline`)
-      setIndex(prev => prev + 1)
+      // setIndex(prev => prev + 1)
     }
   }
   const handleStartTranslate = () => {
@@ -49,6 +50,7 @@ const Page = (props: {}) => {
     }
   }
   const handleEndAudio = () => {
+    setIndex(prev => prev + 1)
     translateRef.current?.play()
   }
   const handleEndTranslate = () => {
@@ -57,9 +59,19 @@ const Page = (props: {}) => {
     }
     audioRef.current?.play()
   }
+  const handleNextPage = () => {
+    navigate(`../page/${page+1}`)
+  }
+  const handlePrevPage = () => {
+    navigate(-1)
+  }
   return (
     <div className='bg-isabelline aye-font sm:w-4/5 md:w-3/5 lg:w-2/5 xl:2/5 w-full h-fit'>
-      
+      <div className="grid grid-cols-3 justify-between justify-items-center w-full p-2 items-center h-auto">
+        {page !== 603 ? <div className='cursor-pointer' onClick={handleNextPage}><AiOutlineArrowRight /></div> : <div>End</div>}
+        <div>صفحه {page+1}</div>
+        {page !== 0 && <div className='cursor-pointer' onClick={handlePrevPage}><AiOutlineArrowLeft /></div>}
+      </div>
       {
         pages[page].map((aye, i) => {
           return (
