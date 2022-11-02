@@ -1,13 +1,16 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import { pages } from "../assets/page";
 import { ayat } from "../assets/ayat";
 import { surah } from "../assets/surah";
-import translate from '../redux/exportPageTranslate';
+import { ansarian } from "../assets/ansarian";
+import { makarem } from "../assets/makarem";
 import { surahName } from "../assets/surahName";
 import { TbPlayerPlay, TbPlayerPause, TbSettings } from "react-icons/tb";
 import { AiOutlineArrowLeft, AiOutlineArrowRight} from "react-icons/ai"
 import { ImCopy } from "react-icons/im";
+import { useSelector } from 'react-redux';
+import { State } from "../redux/reduxType";
 const Page = (props: {}) => {
   const navigate = useNavigate()
   const { id } = useParams<string>();
@@ -18,14 +21,23 @@ const Page = (props: {}) => {
   const [isPlayed, setIsPlayed] = useState<boolean>(false)
   const audioRef = useRef<HTMLAudioElement>(null)
   const translateRef = useRef<HTMLAudioElement>(null)
+  const [translate,setTranslate] = useState<string[][]>()
+  const setting = useSelector((state: State) => state.setting.value);
+  useEffect(() => {
+    if (setting.translate === 'makarem') {
+      setTranslate(makarem)
+    } else {
+      setTranslate(ansarian)
+    }
+  }, [setting])
   if (id) page = +id;
   const handleStart = async(e: React.MouseEvent<HTMLElement>,i: number) => { 
     e.stopPropagation()
-    setIndex(i)
+    await setIndex(i)
     if (index || index === 0) {
       const ayeB = `${ayat[page][index]}`.padStart(3,'0')
       const surahB = `${surah[page][index]}`.padStart(3,'0')
-      await setAudioSrc(`https://asset.nasimrezvan.com/data/Ghamadi/${surahB}${ayeB}.mp3?offline`)
+      await setAudioSrc(`https://asset.nasimrezvan.com/data/${setting.ghari}/${surahB}${ayeB}.mp3?offline`)
       audioRef.current?.play()
       setIsPlayed(true)
     }
@@ -47,7 +59,7 @@ const Page = (props: {}) => {
     if (index || index === 0) {
       const ayeB = `${ayat[page][index]}`.padStart(3,'0')
       const surahB = `${surah[page][index]}`.padStart(3,'0')
-      setAudioSrc(`https://asset.nasimrezvan.com/data/Ghamadi/${surahB}${ayeB}.mp3?offline`)
+      setAudioSrc(`https://asset.nasimrezvan.com/data/${setting.ghari}/${surahB}${ayeB}.mp3?offline`)
     }
   }
   const handleEndAudio = () => {
@@ -67,7 +79,7 @@ const Page = (props: {}) => {
     navigate(-1)
   }
   return (
-    <div className='bg-isabelline aye-font sm:w-4/5 md:w-3/5 lg:w-2/5 xl:2/5 w-full h-fit'>
+    <div className={`bg-isabelline aye-font sm:w-4/5 md:w-3/5 lg:w-2/5 xl:2/5 w-full h-fit ${setting.fontSize}`}>
       <div className="grid grid-cols-3 justify-between justify-items-center w-full p-2 items-center h-auto">
         {page !== 603 ? <div className='cursor-pointer' onClick={handleNextPage}><AiOutlineArrowRight /></div> : <div>End</div>}
         <div>صفحه {page+1}</div>
@@ -110,7 +122,7 @@ const Page = (props: {}) => {
                   }
                   >
                     <div className='my-4'>{aye}</div>
-                    <div className='translate-font'>{translate[page][i]}</div>
+                    <div className='translate-font'>{translate && translate[page][i]}</div>
                   </div>
                 </div>
               </>
@@ -121,7 +133,7 @@ const Page = (props: {}) => {
       <div className='sticky z-20 bottom-0 flex justify-center items-center mx-auto box-border bg-verdigris p-5 rounded-tl-3xl rounded-tr-3xl'>
         <ul className='flex list-none justify-center items-center gap-5 '>
           <li onClick={(e) => isPlayed ? handlePause() : index ? handleStart(e, index) : handleStart(e, 0)} className='cursor-pointer'>{isPlayed ? <TbPlayerPause color='white' size={30}/> : <TbPlayerPlay color='white' size={30}/>}</li>
-          <li onClick={() => navigate(-1)} className='cursor-pointer'><TbSettings color='white' size={30}/></li>
+          <li onClick={() => navigate('../setting')} className='cursor-pointer'><TbSettings color='white' size={30}/></li>
         </ul>
       </div>
       <audio src={audioSrc} ref={audioRef} onPlay={handleStartAudio} onEnded={handleEndAudio}></audio>
